@@ -271,7 +271,7 @@ function updateTurnIndicator() {
 // 타이머 시작
 function startTimer() {
     const timerElement = document.getElementById("timer");
-    timeLeft = 30; // 타이머 초기화
+    timeLeft = 60; // 타이머 초기화
     timerElement.textContent = `Time Left: ${timeLeft}s`;
 
     timer = setInterval(() => {
