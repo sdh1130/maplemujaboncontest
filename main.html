@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>메무대 밴픽</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="ban-pick-ui">
+        <!-- Blue Team -->
+        <div class="side-panel blue">
+            <h2>Blue Team</h2>
+            <div class="pick-box">
+                <!-- Picked Champions for Blue Team -->
+                <div id="blue-picked" class="picked-list"></div>
+            </div>
+        </div>
+
+        <!-- Champion Pool and Controls -->
+        <div id="center-panel">
+            <!-- Turn Indicator and Timer -->
+            <div id="controls">
+                <div id="turn-indicator"></div>
+                <div id="timer">Time Left: 30s</div>
+            </div>
+            <div id="champion-pool-container">
+                <div id="champion-pool" class="champion-grid">
+                    <!-- Champion images will be dynamically loaded -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Red Team -->
+        <div class="side-panel red">
+            <h2>Red Team</h2>
+            <div class="pick-box">
+                <!-- Picked Champions for Red Team -->
+                <div id="red-picked" class="picked-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banned Champions Section -->
+    <div id="banned-champions-ui">
+        <div class="ban-panel blue">
+            <div id="blue-bans" class="ban-list"></div>
+        </div>
+        <div class="ban-panel red">
+            <div id="red-bans" class="ban-list"></div>
+        </div>
+    </div>
+
+
+    <script src="script.js"></script>
+</body>
+</html>
