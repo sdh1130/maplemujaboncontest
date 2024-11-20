@@ -8,6 +8,8 @@ let banOrder = [
     { turn: "red", ban: 4 },
     { turn: "blue", ban: 5 },
     { turn: "red", ban: 6 },
+    { turn: "blue", ban: 7 },
+    { turn: "red", ban: 8 },
 ];
 let pickOrder = [
     { turn: "blue", pick: 1 },
@@ -343,6 +345,12 @@ function selectRandomChampionsForFinalPick(team, excludeChampion = null) {
 let blueRerollUsed = false;
 let redRerollUsed = false;
 
+// 각 팀의 리롤 가능 횟수를 설정
+let blueRerollCount = 3; // 블루 팀의 리롤 횟수
+let redRerollCount = 3; // 레드 팀의 리롤 횟수
+
+// 랜덤으로 선택된 챔피언을 표시하고 선택할 수 있도록 하는 함수
+// 랜덤으로 선택된 챔피언을 표시하고 선택할 수 있도록 하는 함수
 // 랜덤으로 선택된 챔피언을 표시하고 선택할 수 있도록 하는 함수
 function displayRandomChampions(champions, team) {
     const championPoolContainer = document.getElementById('champion-pool-container');
@@ -376,53 +384,91 @@ function displayRandomChampions(champions, team) {
     imageContainer.style.justifyContent = 'center';
     imageContainer.style.gap = '20px';
 
-    champions.forEach(champion => {
+    champions.forEach((champion, index) => {
+        const imgContainer = document.createElement('div');
+        imgContainer.style.display = 'flex';
+        imgContainer.style.flexDirection = 'column';
+        imgContainer.style.alignItems = 'center';
+
         const img = document.createElement('img');
         img.src = champion.image;
         img.alt = champion.name;
-        img.style.width = '270px';
-        img.style.height = '270px';
+        img.style.width = '150px';
+        img.style.height = '150px';
         img.style.borderRadius = '8px';
         img.style.cursor = 'pointer';
 
         img.addEventListener('click', () => {
-            alert(`${team.toUpperCase()} 팀이 ${champion.name}을(를) 선택했습니다.`);
+            alert(`${team.toUpperCase()} 팀이 ${champions[index].name}을(를) 선택했습니다.`);
             document.body.removeChild(selectionContainer);
-            addFinalPickToTeam(team, champion);
+            addFinalPickToTeam(team, champions[index]); // 리롤된 챔피언 상태를 반영하여 선택
 
+            // 다음 팀의 리롤 창 띄우기
             if (team === "red") {
-                selectRandomChampionsForFinalPick("blue", champion);
+                selectRandomChampionsForFinalPick("blue");
             }
         });
 
-        imageContainer.appendChild(img);
+        // 리롤 버튼 추가
+        const rerollButton = document.createElement('button');
+        rerollButton.textContent = 'Re-roll';
+        rerollButton.style.marginTop = '10px';
+        rerollButton.style.padding = '5px 10px';
+        rerollButton.style.fontSize = '14px';
+        rerollButton.style.cursor = 'pointer';
+
+        let rerollUsed = false; // 리롤 사용 여부 확인
+
+        rerollButton.addEventListener('click', () => {
+            if (!rerollUsed) {
+                let rerollCount = team === 'blue' ? blueRerollCount : redRerollCount;
+
+                if (rerollCount > 0) {
+                    if (team === 'blue') {
+                        blueRerollCount--;
+                    } else if (team === 'red') {
+                        redRerollCount--;
+                    }
+
+                    // 리롤 가능한 챔피언 중 중복되지 않는 새로운 챔피언 선택
+                    const availableChampions = championPool.filter(ch =>
+                        !champions.includes(ch) &&
+                        !bluePicked.includes(ch) &&
+                        !redPicked.includes(ch) &&
+                        !blueBanned.includes(ch) &&
+                        !redBanned.includes(ch)
+                    );
+
+                    if (availableChampions.length > 0) {
+                        const newChampion = availableChampions[Math.floor(Math.random() * availableChampions.length)];
+                        champions[index] = newChampion; // 리롤된 챔피언으로 업데이트
+                        img.src = newChampion.image;
+                        img.alt = newChampion.name;
+                        alert(`${team.toUpperCase()} 팀이 새로운 챔피언을 리롤했습니다: ${newChampion.name}`);
+
+                        rerollUsed = true; // 리롤 사용 기록
+                        rerollButton.disabled = true; // 버튼 비활성화
+                        rerollButton.style.opacity = "0.5"; // 비활성화 시각 효과
+                    } else {
+                        alert("리롤할 수 있는 챔피언이 충분하지 않습니다.");
+                    }
+                } else {
+                    alert(`${team.toUpperCase()} 팀은 더 이상 리롤할 수 없습니다.`);
+                }
+            } else {
+                alert("이미 리롤을 사용한 칸입니다.");
+            }
+        });
+
+        imgContainer.appendChild(img);
+        imgContainer.appendChild(rerollButton);
+        imageContainer.appendChild(imgContainer);
     });
 
     selectionContainer.appendChild(imageContainer);
-
-    // 리롤 버튼 추가
-    if ((team === 'blue' && !blueRerollUsed) || (team === 'red' && !redRerollUsed)) {
-        const rerollButton = document.createElement('button');
-        rerollButton.textContent = 'Re-roll';
-        rerollButton.style.marginTop = '20px';
-        rerollButton.style.padding = '10px 20px';
-        rerollButton.style.fontSize = '16px';
-        rerollButton.style.cursor = 'pointer';
-
-        rerollButton.addEventListener('click', () => {
-            if (team === 'blue') {
-                blueRerollUsed = true;
-            } else if (team === 'red') {
-                redRerollUsed = true;
-            }
-            selectRandomChampionsForFinalPick(team); // 리롤 시 새로운 랜덤 픽 생성
-        });
-
-        selectionContainer.appendChild(rerollButton);
-    }
-
     document.body.appendChild(selectionContainer);
 }
+
 
 
 
