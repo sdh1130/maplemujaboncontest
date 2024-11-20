@@ -393,8 +393,8 @@ function displayRandomChampions(champions, team) {
         const img = document.createElement('img');
         img.src = champion.image;
         img.alt = champion.name;
-        img.style.width = '150px';
-        img.style.height = '150px';
+        img.style.width = '280px';
+        img.style.height = '230px';
         img.style.borderRadius = '8px';
         img.style.cursor = 'pointer';
 
