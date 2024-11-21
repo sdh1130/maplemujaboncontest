@@ -12,8 +12,8 @@ let firstBanOrder = [
     { turn: "red", ban: 6 },
 ];
 let midBanOrder = [
-    { turn: "blue", ban: 7 }, // 중간 밴
-    { turn: "red", ban: 8 }, // 중간 밴
+    { turn: "red", ban: 7 }, // 중간 밴
+    { turn: "blue", ban: 8 },  // 중간 밴
 ];
 let pickOrder = [
     { turn: "blue", pick: 1 },
