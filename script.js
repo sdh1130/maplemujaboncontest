@@ -1,15 +1,19 @@
 // 초기 변수 설정
 let currentPhase = "ban"; // 시작은 밴 단계
 let currentTurn = "blue"; // "blue" or "red"
-let banOrder = [
+
+// 밴과 픽 순서 정의
+let firstBanOrder = [
     { turn: "blue", ban: 1 },
     { turn: "red", ban: 2 },
     { turn: "blue", ban: 3 },
     { turn: "red", ban: 4 },
     { turn: "blue", ban: 5 },
     { turn: "red", ban: 6 },
-    { turn: "blue", ban: 7 },
-    { turn: "red", ban: 8 },
+];
+let midBanOrder = [
+    { turn: "blue", ban: 7 }, // 중간 밴
+    { turn: "red", ban: 8 }, // 중간 밴
 ];
 let pickOrder = [
     { turn: "blue", pick: 1 },
@@ -18,6 +22,7 @@ let pickOrder = [
     { turn: "blue", pick: 4 },
     { turn: "blue", pick: 5 },
     { turn: "red", pick: 6 },
+    // 중간 밴 후 추가 픽
     { turn: "red", pick: 7 },
     { turn: "blue", pick: 8 },
 ];
@@ -28,7 +33,7 @@ let redBanned = [];
 let bluePicked = [];
 let redPicked = [];
 let timer;
-let timeLeft = 30;
+let timeLeft = 60;
 
 // 챔피언 풀 데이터 (임의로 설정, 실제 데이터에 맞게 변경)
 const championPool = [
@@ -163,7 +168,7 @@ function loadChampionPick() {
 
 // 챔피언 클릭 처리
 function handleChampionClick(champion, imgElement) {
-    if (currentPhase === "ban") {
+    if (currentPhase === "ban" || currentPhase === "mid-ban") {
         handleBan(champion, imgElement);
     } else if (currentPhase === "pick") {
         handlePick(champion, imgElement);
@@ -172,7 +177,15 @@ function handleChampionClick(champion, imgElement) {
 
 // 밴 처리
 function handleBan(champion, imgElement) {
-    const turnData = banOrder[currentActionIndex];
+    let turnData;
+    if (currentPhase === "ban") {
+        turnData = firstBanOrder[currentActionIndex];
+    } else if (currentPhase === "mid-ban") {
+        turnData = midBanOrder[currentActionIndex];
+    } else {
+        return; // 밴 단계가 아닌 경우 처리 중단
+    }
+
     if (currentTurn !== turnData.turn) return; // 잘못된 턴 방지
 
     if (currentTurn === "blue") {
@@ -187,25 +200,39 @@ function handleBan(champion, imgElement) {
     imgElement.style.pointerEvents = "none";
 
     currentActionIndex++;
-    if (currentActionIndex < banOrder.length) {
-        currentTurn = banOrder[currentActionIndex].turn;
+
+    if (currentPhase === "ban" && currentActionIndex < firstBanOrder.length) {
+        // 첫 번째 밴 진행 중
+        currentTurn = firstBanOrder[currentActionIndex].turn;
         updateTurnIndicator();
         resetTimer();
-    } else {
-        currentPhase = "pick"; // 밴이 완료되면 픽으로 전환
+    } else if (currentPhase === "ban" && currentActionIndex === firstBanOrder.length) {
+        // 첫 번째 밴 완료 후 픽으로 전환
+        currentPhase = "pick";
         currentActionIndex = 0;
+        currentTurn = pickOrder[currentActionIndex].turn;
+        updateTurnIndicator();
+        resetTimer();
+    } else if (currentPhase === "mid-ban" && currentActionIndex < midBanOrder.length) {
+        // 중간 밴 진행 중
+        currentTurn = midBanOrder[currentActionIndex].turn;
+        updateTurnIndicator();
+        resetTimer();
+    } else if (currentPhase === "mid-ban" && currentActionIndex === midBanOrder.length) {
+        // 중간 밴 완료 후 픽 단계로 전환
+        currentPhase = "pick";
+        currentActionIndex = 6; // 픽 순서 재개
         currentTurn = pickOrder[currentActionIndex].turn;
         updateTurnIndicator();
         resetTimer();
     }
 }
 
-// 픽 처리 함수
+// 픽 처리
 function handlePick(champion, imgElement) {
     const turnData = pickOrder[currentActionIndex];
     if (currentTurn !== turnData.turn) return; // 잘못된 턴 방지
 
-    // 현재 턴에 맞는 팀의 픽 업데이트
     if (currentTurn === "blue") {
         bluePicked.push(champion);
         updatePickedUI("blue", bluePicked);
@@ -214,18 +241,29 @@ function handlePick(champion, imgElement) {
         updatePickedUI("red", redPicked);
     }
 
-    // 선택된 챔피언 비활성화
     imgElement.style.opacity = "0.5";
     imgElement.style.pointerEvents = "none";
 
-    // 다음 턴으로 진행
     currentActionIndex++;
-    if (currentActionIndex < pickOrder.length) {
+    if (currentActionIndex < 6) {
+        // 첫 번째 픽 진행 중
+        currentTurn = pickOrder[currentActionIndex].turn;
+        updateTurnIndicator();
+        resetTimer();
+    } else if (currentActionIndex === 6) {
+        // 첫 번째 픽 완료 후 중간 밴으로 전환
+        currentPhase = "mid-ban";
+        currentActionIndex = 0;
+        currentTurn = midBanOrder[currentActionIndex].turn;
+        updateTurnIndicator();
+        resetTimer();
+    } else if (currentActionIndex < pickOrder.length) {
+        // 두 번째 픽 진행 중
         currentTurn = pickOrder[currentActionIndex].turn;
         updateTurnIndicator();
         resetTimer();
     } else {
-        endPickPhase(); // 모든 픽이 완료되면 픽 페이즈 종료
+        endPickPhase(); // 모든 픽이 완료된 경우
     }
 }
 
@@ -261,7 +299,10 @@ function updatePickedUI(team, pickedChampions) {
 function updateTurnIndicator() {
     const turnIndicator = document.getElementById("turn-indicator");
     if (currentPhase === "ban") {
-        const turnData = banOrder[currentActionIndex];
+        const turnData = firstBanOrder[currentActionIndex];
+        turnIndicator.textContent = `${turnData.turn.toUpperCase()}'S TURN (BAN ${turnData.ban})`;
+    } else if (currentPhase === "mid-ban") {
+        const turnData = midBanOrder[currentActionIndex];
         turnIndicator.textContent = `${turnData.turn.toUpperCase()}'S TURN (BAN ${turnData.ban})`;
     } else if (currentPhase === "pick") {
         const turnData = pickOrder[currentActionIndex];
