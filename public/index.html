@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ban-Pick Lobby</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        function createRoom() {
+            const roomID = document.getElementById("roomID").value;
+            if (roomID) {
+                socket.emit("createRoom", roomID);
+            }
+        }
+
+        function joinRoom() {
+            const roomID = document.getElementById("roomID").value;
+            if (roomID) {
+                socket.emit("joinRoom", roomID);
+            }
+        }
+
+        socket.on("roomCreated", (roomID) => {
+            window.location.href = `/room.html?room=${roomID}`;
+        });
+
+        socket.on("roomJoined", (roomID) => {
+            window.location.href = `/room.html?room=${roomID}`;
+        });
+
+        socket.on("error", (message) => {
+            alert(message);
+        });
+    </script>
+</head>
+<body>
+    <h1>Ban-Pick Lobby</h1>
+    <input type="text" id="roomID" placeholder="Enter Room ID">
+    <button onclick="createRoom()">Create Room</button>
+    <button onclick="joinRoom()">Join Room</button>
+</body>
+</html>

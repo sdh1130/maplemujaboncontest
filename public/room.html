@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ban-Pick Room</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomID = urlParams.get("room");
+
+        socket.emit("joinRoom", roomID);
+
+        socket.on("banPickUpdate", (action) => {
+            console.log("Ban-Pick Update:", action);
+            // 여기에 밴픽 UI 갱신 코드를 추가하세요.
+        });
+
+        socket.on("playerLeft", (playerID) => {
+            alert(`Player ${playerID} left the room.`);
+        });
+
+        function sendBanPickAction(action) {
+            socket.emit("banPickAction", { roomID, action });
+        }
+    </script>
+</head>
+<body>
+    <h1>Room ID: <span id="roomID"></span></h1>
+    <script>
+        document.getElementById("roomID").innerText = roomID;
+    </script>
+    <!-- 밴픽 UI 코드 삽입 -->
+</body>
+</html>

@@ -1,26 +1,70 @@
-// server.js
 const express = require("express");
-const cors = require("cors");
+const http = require("http");
+const { Server } = require("socket.io");
+
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-app.use(cors());
-app.use(express.json());
+// 방 정보 저장
+const rooms = {};
 
-// 챔피언 데이터 (예시)
-const champions = [
-    { id: 1, name: "히어로", image: "Hero.jpg" },
-    { id: 2, name: "팔라딘", image: "Paladin.jpg" },
-    { id: 3, name: "다크나이트", image: "champ3.png" },
-    // 필요에 따라 추가
-];
+app.use(express.static("public"));
 
-// 챔피언 데이터를 제공하는 API
-app.get("/champions", (req, res) => {
-    res.json(champions);
+// 방 생성 이벤트
+io.on("connection", (socket) => {
+    console.log(`User connected: ${socket.id}`);
+
+    // 방 생성
+    socket.on("createRoom", (roomID) => {
+        if (rooms[roomID]) {
+            socket.emit("error", "Room already exists.");
+        } else {
+            rooms[roomID] = { players: [socket.id], state: {} };
+            socket.join(roomID);
+            socket.emit("roomCreated", roomID);
+            console.log(`Room created: ${roomID}`);
+        }
+    });
+
+    // 방 참여
+    socket.on("joinRoom", (roomID) => {
+        if (!rooms[roomID]) {
+            socket.emit("error", "Room does not exist.");
+        } else if (rooms[roomID].players.length >= 2) {
+            socket.emit("error", "Room is full.");
+        } else {
+            rooms[roomID].players.push(socket.id);
+            socket.join(roomID);
+            io.to(roomID).emit("roomJoined", roomID);
+            console.log(`User ${socket.id} joined room: ${roomID}`);
+        }
+    });
+
+    // 밴픽 이벤트 전달
+    socket.on("banPickAction", ({ roomID, action }) => {
+        io.to(roomID).emit("banPickUpdate", action);
+    });
+
+    // 연결 종료 시 방 정리
+    socket.on("disconnect", () => {
+        for (const roomID in rooms) {
+            const index = rooms[roomID].players.indexOf(socket.id);
+            if (index !== -1) {
+                rooms[roomID].players.splice(index, 1);
+                if (rooms[roomID].players.length === 0) {
+                    delete rooms[roomID];
+                } else {
+                    io.to(roomID).emit("playerLeft", socket.id);
+                }
+                break;
+            }
+        }
+        console.log(`User disconnected: ${socket.id}`);
+    });
 });
 
-// 서버 시작
 const PORT = 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+server.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
 });
