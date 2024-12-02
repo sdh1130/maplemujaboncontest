@@ -10,15 +10,24 @@
         const urlParams = new URLSearchParams(window.location.search);
         const roomID = urlParams.get("room");
 
-        socket.emit("joinRoom", roomID);
+        // 방 참여 확인
+        if (roomID) {
+            socket.emit("joinRoom", roomID);
+        } else {
+            alert("Room ID not found.");
+            window.location.href = "/";
+        }
 
         socket.on("banPickUpdate", (action) => {
             console.log("Ban-Pick Update:", action);
-            // 여기에 밴픽 UI 갱신 코드를 추가하세요.
         });
 
-        socket.on("playerLeft", (playerID) => {
-            alert(`Player ${playerID} left the room.`);
+        socket.on("playerJoined", ({ playerId }) => {
+            alert(`Player ${playerId} joined the room.`);
+        });
+
+        socket.on("playerLeft", (playerId) => {
+            alert(`Player ${playerId} left the room.`);
         });
 
         function sendBanPickAction(action) {
@@ -27,10 +36,11 @@
     </script>
 </head>
 <body>
-    <h1>Room ID: <span id="roomID"></span></h1>
+    <h1>Ban-Pick Room</h1>
+    <p>Room ID: <strong id="room-id"></strong></p>
     <script>
-        document.getElementById("roomID").innerText = roomID;
+        document.getElementById("room-id").innerText = roomID;
     </script>
-    <!-- 밴픽 UI 코드 삽입 -->
+    <!-- Ban-Pick UI goes here -->
 </body>
 </html>

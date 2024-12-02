@@ -23,10 +23,12 @@
         }
 
         socket.on("roomCreated", (roomID) => {
+            alert(`Room ${roomID} created successfully.`);
             window.location.href = `/room.html?room=${roomID}`;
         });
 
         socket.on("roomJoined", (roomID) => {
+            alert(`Joined room ${roomID} successfully.`);
             window.location.href = `/room.html?room=${roomID}`;
         });
 
