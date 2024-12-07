@@ -4,43 +4,25 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ban-Pick Room</title>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-        const socket = io();
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomID = urlParams.get("room");
-
-        // 방 참여 확인
-        if (roomID) {
-            socket.emit("joinRoom", roomID);
-        } else {
-            alert("Room ID not found.");
-            window.location.href = "/";
-        }
-
-        socket.on("banPickUpdate", (action) => {
-            console.log("Ban-Pick Update:", action);
-        });
-
-        socket.on("playerJoined", ({ playerId }) => {
-            alert(`Player ${playerId} joined the room.`);
-        });
-
-        socket.on("playerLeft", (playerId) => {
-            alert(`Player ${playerId} left the room.`);
-        });
-
-        function sendBanPickAction(action) {
-            socket.emit("banPickAction", { roomID, action });
-        }
-    </script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.24.0/firebase-database.js"></script>
+    <script src="script.js"></script>
 </head>
 <body>
     <h1>Ban-Pick Room</h1>
     <p>Room ID: <strong id="room-id"></strong></p>
+    <div id="ban-pick-container"></div>
     <script>
-        document.getElementById("room-id").innerText = roomID;
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomID = urlParams.get("room");
+        if (roomID) {
+            document.getElementById("room-id").textContent = roomID;
+            startBanPickSystem(roomID);
+        } else {
+            alert("Room ID not found.");
+            window.location.href = "/";
+        }
     </script>
-    <!-- Ban-Pick UI goes here -->
 </body>
 </html>

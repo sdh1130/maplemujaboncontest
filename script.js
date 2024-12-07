@@ -23,8 +23,8 @@ let pickOrder = [
     { turn: "blue", pick: 5 },
     { turn: "red", pick: 6 },
     // 중간 밴 후 추가 픽
-    { turn: "red", pick: 7 },
-    { turn: "blue", pick: 8 },
+    { turn: "blue", pick: 7 },
+    { turn: "red", pick: 8 },
 ];
 
 let currentActionIndex = 0;
